@@ -1,3 +1,8 @@
+from flask import Flask, render_template_string, request
+
+app = Flask(__name__)
+
+html_code = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -61,42 +66,47 @@
             color: #007bff;
         }
     </style>
-    <script>
-        function calculate(operation) {
-            const num1 = parseFloat(document.getElementById('num1').value);
-            const num2 = parseFloat(document.getElementById('num2').value);
-            let result;
-
-            if (isNaN(num1) || isNaN(num2)) {
-                result = 'Please enter valid numbers';
-            } else {
-                if (operation === 'add') {
-                    result = num1 + num2;
-                } else if (operation === 'subtract') {
-                    result = num1 - num2;
-                }
-            }
-
-            document.getElementById('result').textContent = `Result: ${result}`;
-        }
-    </script>
 </head>
 <body>
     <div class="container">
         <h1>Number Operations V4</h1>
-        <div class="input-group">
-            <label for="num1">Number 1:</label>
-            <input type="text" id="num1" placeholder="Enter first number">
-        </div>
-        <div class="input-group">
-            <label for="num2">Number 2:</label>
-            <input type="text" id="num2" placeholder="Enter second number">
-        </div>
-        <div>
-            <button onclick="calculate('add')">Add</button>
-            <button onclick="calculate('subtract')">Subtract</button>
-        </div>
-        <h2 id="result">Result: </h2>
+        <form method="POST">
+            <div class="input-group">
+                <label for="num1">Number 1:</label>
+                <input type="text" id="num1" name="num1" placeholder="Enter first number">
+            </div>
+            <div class="input-group">
+                <label for="num2">Number 2:</label>
+                <input type="text" id="num2" name="num2" placeholder="Enter second number">
+            </div>
+            <div>
+                <button type="submit" name="operation" value="add">Add</button>
+                <button type="submit" name="operation" value="subtract">Subtract</button>
+            </div>
+        </form>
+        <h2 id="result">{{ result }}</h2>
     </div>
 </body>
 </html>
+"""
+
+@app.route('/', methods=['GET', 'POST'])
+def number_operations():
+    result = ""
+    if request.method == 'POST':
+        try:
+            num1 = float(request.form.get('num1', 0))
+            num2 = float(request.form.get('num2', 0))
+            operation = request.form.get('operation')
+
+            if operation == 'add':
+                result = f"Result: {num1 + num2}"
+            elif operation == 'subtract':
+                result = f"Result: {num1 - num2}"
+        except ValueError:
+            result = "Please enter valid numbers"
+
+    return render_template_string(html_code, result=result)
+
+if __name__ == '__main__':
+    app.run(debug=True)
